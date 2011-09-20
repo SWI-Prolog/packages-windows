@@ -1,44 +1,134 @@
 ################################################################
-#  Makefile for the SWI-Prolog DLL demos
+# Makefile template for SWI-Prolog windows package
+#
+# This template is used by configure to create Makefile.  See
+# the file INSTALL for further installation instructions.
+#
+# License: LGPL
+#
+# Author: Jan Wielemaker (J.Wiememaker@cs.vu.nl)
 ################################################################
 
-srcdir=@srcdir@
-@VPATH@ @srcdir@
+.SUFFIXES: .tex .dvi .doc .pl
+
+PL=@PL@
+PLBASE=@PLBASE@
+PLARCH=@PLARCH@
+PLINCL=@PLINCL@
+PKGDOC=$(PLBASE)/doc/packages
+PCEHOME=../xpce
+SOLIB=@SOLIB@
 
 CC=@CC@
-LDEXE=@LDEXE@
-PLARCH=@PLARCH@
-SOEXT=@SO_EXT@
-
 COFLAGS=@COFLAGS@
 CWFLAGS=@CWFLAGS@
-CIFLAGS=@CIFLAGS@ -I$(PLHOME)/src
 CMFLAGS=@CMFLAGS@
-CPFLAGS=
-CFLAGS=	$(CWFLAGS) $(COFLAGS) $(CIFLAGS) $(CMFLAGS) $(CPFLAGS)
-LDFLAGS=@LDFLAGS@ $(CPFLAGS)
+CIFLAGS=-I.
+CFLAGS=$(COFLAGS) $(CWFLAGS) $(CMFLAGS) $(CIFLAGS) @DEFS@
+LIBS=@LIBS@
 
-PLHOME=../../..
+PUBLICPL=swipl
+DOCTOTEX=$(PCEHOME)/bin/doc2tex
+PLTOTEX=$(PUBLICPL) -q -s pltotex.pl -g pltotex --
+DOC=nlp
+TEX=$(DOC).tex snowball.tex isub.tex
+DVI=$(DOC).dvi
+PDF=$(DOC).pdf
+RUNTEX=../../man/runtex
 
-include $(srcdir)/../../common.mk
+LD=@LD@
+LDFLAGS=@LDSOFLAGS@
 
-PLREGTRY=	$(PLHOME)/lib/$(PLARCH)/plregtry.$(SOEXT)
-DLLTEST=	$(PLHOME)/lib/$(PLARCH)/dlltest.$(SOEXT)
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_DATA=@INSTALL_DATA@
+INSTALL_PLARCH=@INSTALL_PLARCH@
 
-all:	$(PLREGTRY) $(DLLTEST)
+TARGETS=	plregtry.@SO@ \
+		dlltest.@SO@ \
+LIBPL=		registry.pl \
 
-$(PLREGTRY):	plregtry.o
-	$(CC) -shared $(COFLAGS) -o $@ $^ -L$(PLHOME)/lib/$(PLARCH) -lswipl
+REGOBJ=		plregtry.o
+TSTOBJ=		dlltest.o
 
-$(DLLTEST):	dlltest.o
-	$(CC) -shared $(COFLAGS) -o $@ $^ -L$(PLHOME)/lib/$(PLARCH) -lswipl -lplterm
+all:		$(TARGETS)
+
+plregtry.@SO@:	$(REGOBJ)
+		$(LD) $(LDFLAGS) -o $@ $(REGOBJ) $(LIBS)
+
+dlltest.@SO@:	$(TSTOBJ)
+		$(LD) $(LDFLAGS) -o $@ $(TSTOBJ) $(LIBS)
+
+install:	$(TARGETS) $(LIBPL)
+		mkdir -p $(DESTDIR)$(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH)
+		for f in $(TARGETS); do \
+		  $(INSTALL_PROGRAM) $$f $(DESTDIR)$(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH); \
+		done
+		mkdir -p $(DESTDIR)$(PLBASE)/library
+		for f in $(LIBPL); do \
+		  $(INSTALL_DATA) $$f $(DESTDIR)$(PLBASE)/library; \
+		done
+		$(PL) -f none -g make -t halt
+
+ln-install::
+		$(MAKE) INSTALL_DATA="../ln-install" INSTALL_PROGRAM="../ln-install" install
+
+rpm-install:	install
+
+html-install::
+#		mkdir -p $(DESTDIR)$(PKGDOC)
+#		$(INSTALL) -m 644 $(DOC).html $(DESTDIR)$(PKGDOC)
+
+pdf-install::
+#		mkdir -p $(DESTDIR)$(PKGDOC)
+#		$(INSTALL) -m 644 $(DOC).pdf $(DESTDIR)$(PKGDOC)
+
+uninstall::
+		(cd $(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH) && rm -f $(TARGETS))
+		(cd $(PLBASE)/library && rm -f $(LIBPL))
+		$(PL) -f none -g make -t halt
+
+################################################################
+# Testing
+################################################################
+
+check::
+#		$(PL) -q -f test.pl -g true -t run_tests
+
+################################################################
+# Documentation
+################################################################
+
+pdf:		$(PDF)
+
+$(DVI):		$(TEX)
+		$(RUNTEX) $(DOC)
+
+$(PDF):		$(TEX)
+		$(RUNTEX) --pdf $(DOC)
+
+html:		$(TEX)
+		latex2html $(DOC)
+		mv html/index.html $(DOC).html
+		rm -r html
+
+$(TEX):		$(DOCTOTEX)
+
+.doc.tex:
+		$(DOCTOTEX) $*.doc > $*.tex
+.pl.tex:
+		$(PLTOTEX) $*.pl > $*.tex
+
+################################################################
+# Clean
+################################################################
 
 clean:
-	rm -f *.o
-	rm -f *~
+		rm -f $(OBJ) *~ *.o *% a.out core config.log
+		$(MAKE) -C libstemmer_c -f Makefile.pl clean
 
-distclean: clean
-	rm -f $(PLHOME)/lib/$(PLARCH)/plregtry.$(SOEXT)
-	rm -f $(PLHOME)/lib/$(PLARCH)/plregtry.$(SOEXT).a
-	rm -f $(PLHOME)/lib/$(PLARCH)/dlltest.$(SOEXT)
-	rm -f $(PLHOME)/lib/$(PLARCH)/dlltest.$(SOEXT).a
+distclean:	clean
+		rm -f $(TARGETS) config.cache config.h config.status Makefile
+		rm -f $(DOC).aux $(DOC).log $(DOC).out $(DOC).toc
+		rm -rf html
+		$(MAKE) -C libstemmer_c -f Makefile.pl distclean

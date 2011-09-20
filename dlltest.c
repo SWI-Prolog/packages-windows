@@ -23,7 +23,7 @@
 */
 
 #include <windows.h>
-#include "..\console\console.h"
+#include "../../src/win32/console/console.h"
 #include <SWI-Prolog.h>
 #include <stdio.h>
 #include <sys/timeb.h>

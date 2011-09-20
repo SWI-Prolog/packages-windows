@@ -45,7 +45,7 @@ INSTALL_DATA=@INSTALL_DATA@
 INSTALL_PLARCH=@INSTALL_PLARCH@
 
 TARGETS=	plregtry.@SO@ \
-		dlltest.@SO@ \
+		dlltest.@SO@
 LIBPL=		registry.pl \
 
 REGOBJ=		plregtry.o
@@ -57,7 +57,7 @@ plregtry.@SO@:	$(REGOBJ)
 		$(LD) $(LDFLAGS) -o $@ $(REGOBJ) $(LIBS)
 
 dlltest.@SO@:	$(TSTOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(TSTOBJ) $(LIBS)
+		$(LD) $(LDFLAGS) -o $@ $(TSTOBJ) $(LIBS) -lplterm
 
 install:	$(TARGETS) $(LIBPL)
 		mkdir -p $(DESTDIR)$(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH)

@@ -2,8 +2,8 @@
 
 # PLARCH is passed from packages/configure
 
-case $(PLARCH) in
-  *mingw*)
+case $PLARCH in
+  *-win32|*-win64)
 	exit 0
 	;;
   *)

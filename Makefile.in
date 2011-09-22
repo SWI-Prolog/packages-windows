@@ -125,10 +125,8 @@ $(TEX):		$(DOCTOTEX)
 
 clean:
 		rm -f $(OBJ) *~ *.o *% a.out core config.log
-		$(MAKE) -C libstemmer_c -f Makefile.pl clean
 
 distclean:	clean
 		rm -f $(TARGETS) config.cache config.h config.status Makefile
 		rm -f $(DOC).aux $(DOC).log $(DOC).out $(DOC).toc
 		rm -rf html
-		$(MAKE) -C libstemmer_c -f Makefile.pl distclean

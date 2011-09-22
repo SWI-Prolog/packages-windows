@@ -33,6 +33,8 @@ check::
 # Installation
 ################################################################
 
+install: idll ilib
+
 idll::
 		copy plregtry.dll "$(BINDIR)"
 		copy dlltest.dll "$(BINDIR)"

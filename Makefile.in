@@ -9,40 +9,11 @@
 # Author: Jan Wielemaker (J.Wiememaker@cs.vu.nl)
 ################################################################
 
-.SUFFIXES: .tex .dvi .doc .pl
+PACKAGE=windows
+DOC=windows
+include ../Makefile.defs
 
-PL=@PL@
-PLBASE=@PLBASE@
-PLARCH=@PLARCH@
-PLINCL=@PLINCL@
-PKGDOC=$(PLBASE)/doc/packages
-PCEHOME=../xpce
-SOLIB=@SOLIB@
-
-CC=@CC@
-COFLAGS=@COFLAGS@
-CWFLAGS=@CWFLAGS@
-CMFLAGS=@CMFLAGS@
-CIFLAGS=-I.
-CFLAGS=$(COFLAGS) $(CWFLAGS) $(CMFLAGS) $(CIFLAGS) @DEFS@
-LIBS=@LIBS@
-
-PUBLICPL=swipl
-DOCTOTEX=$(PCEHOME)/bin/doc2tex
-PLTOTEX=$(PUBLICPL) -q -s pltotex.pl -g pltotex --
-DOC=nlp
-TEX=$(DOC).tex snowball.tex isub.tex
-DVI=$(DOC).dvi
-PDF=$(DOC).pdf
-RUNTEX=../../man/runtex
-
-LD=@LD@
-LDFLAGS=@LDSOFLAGS@
-
-INSTALL=@INSTALL@
-INSTALL_PROGRAM=@INSTALL_PROGRAM@
-INSTALL_DATA=@INSTALL_DATA@
-INSTALL_PLARCH=@INSTALL_PLARCH@
+CFLAGS+= -I.
 
 TARGETS=	plregtry.@SO@ \
 		dlltest.@SO@
@@ -54,19 +25,19 @@ TSTOBJ=		dlltest.o
 all:		$(TARGETS)
 
 plregtry.@SO@:	$(REGOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(REGOBJ) $(LIBS)
+		$(LD) $(LDSOFLAGS) -o $@ $(REGOBJ) $(LIBS)
 
 dlltest.@SO@:	$(TSTOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(TSTOBJ) $(LIBS) -lplterm
+		$(LD) $(LDSOFLAGS) -o $@ $(TSTOBJ) $(LIBS) -lplterm
 
 install:	$(TARGETS) $(LIBPL)
-		mkdir -p $(DESTDIR)$(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH)
+		mkdir -p $(DESTDIR)$(SOLIBDIR)
 		for f in $(TARGETS); do \
-		  $(INSTALL_PROGRAM) $$f $(DESTDIR)$(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH); \
+		  $(INSTALL_PROGRAM) $$f $(DESTDIR)$(SOLIBDIR); \
 		done
-		mkdir -p $(DESTDIR)$(PLBASE)/library
+		mkdir -p $(DESTDIR)$(PLLIBDIR)
 		for f in $(LIBPL); do \
-		  $(INSTALL_DATA) $$f $(DESTDIR)$(PLBASE)/library; \
+		  $(INSTALL_DATA) $$f $(DESTDIR)$(PLLIBDIR); \
 		done
 		$(PL) -f none -g make -t halt
 
@@ -76,16 +47,16 @@ ln-install::
 rpm-install:	install
 
 html-install::
-#		mkdir -p $(DESTDIR)$(PKGDOC)
-#		$(INSTALL) -m 644 $(DOC).html $(DESTDIR)$(PKGDOC)
+#		mkdir -p $(DESTDIR)$(PKGDOCDIR)
+#		$(INSTALL) -m 644 $(DOC).html $(DESTDIR)$(PKGDOCDIR)
 
 pdf-install::
-#		mkdir -p $(DESTDIR)$(PKGDOC)
-#		$(INSTALL) -m 644 $(DOC).pdf $(DESTDIR)$(PKGDOC)
+#		mkdir -p $(DESTDIR)$(PKGDOCDIR)
+#		$(INSTALL) -m 644 $(DOC).pdf $(DESTDIR)$(PKGDOCDIR)
 
 uninstall::
-		(cd $(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH) && rm -f $(TARGETS))
-		(cd $(PLBASE)/library && rm -f $(LIBPL))
+		(cd $(SOLIBDIR) && rm -f $(TARGETS))
+		(cd $(PLLIBDIR) && rm -f $(LIBPL))
 		$(PL) -f none -g make -t halt
 
 ################################################################
@@ -94,30 +65,6 @@ uninstall::
 
 check::
 #		$(PL) -q -f test.pl -g true -t run_tests
-
-################################################################
-# Documentation
-################################################################
-
-pdf:		$(PDF)
-
-$(DVI):		$(TEX)
-		$(RUNTEX) $(DOC)
-
-$(PDF):		$(TEX)
-		$(RUNTEX) --pdf $(DOC)
-
-html:		$(TEX)
-		latex2html $(DOC)
-		mv html/index.html $(DOC).html
-		rm -r html
-
-$(TEX):		$(DOCTOTEX)
-
-.doc.tex:
-		$(DOCTOTEX) $*.doc > $*.tex
-.pl.tex:
-		$(PLTOTEX) $*.pl > $*.tex
 
 ################################################################
 # Clean

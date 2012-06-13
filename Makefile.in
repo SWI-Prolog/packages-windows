@@ -25,10 +25,10 @@ TSTOBJ=		dlltest.o
 all:		$(TARGETS)
 
 plregtry.@SO@:	$(REGOBJ)
-		$(LD) $(LDSOFLAGS) -o $@ $(REGOBJ) $(LIBS)
+		$(LD) $(LDSOFLAGS) -o $@ $(REGOBJ) $(LIBS) $(LIBPLSO)
 
 dlltest.@SO@:	$(TSTOBJ)
-		$(LD) $(LDSOFLAGS) -o $@ $(TSTOBJ) $(LIBS) -lplterm
+		$(LD) $(LDSOFLAGS) -o $@ $(TSTOBJ) $(LIBS) $(LIBPLSO) -lplterm
 
 install:	$(TARGETS) $(LIBPL)
 		mkdir -p $(DESTDIR)$(SOLIBDIR)

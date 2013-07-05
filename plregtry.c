@@ -99,7 +99,7 @@ static const char *
 APIError(DWORD id)
 { char *msg;
   static WORD lang;
-  static lang_initialised = 0;
+  static int lang_initialised = 0;
 
   if ( !lang_initialised )
     lang = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_UK);
@@ -216,7 +216,7 @@ to_key(term_t h)
   }
 
   if ( PL_get_integer(h, &k) )
-    return (HKEY)k;			/* integer key */
+    return (HKEY)(intptr_t)k;		/* integer key */
 
   return 0;				/* invalid key */
 }
@@ -249,12 +249,12 @@ pl_reg_subkeys(term_t h, term_t l)
   for(i=0;;i++)
   { long rval;
     char kname[256];
-    int  sk = sizeof(kname);
+    size_t  sk = sizeof(kname);
     char cname[256];
-    int  sc = sizeof(cname);
+    size_t  sc = sizeof(cname);
     FILETIME t;
 
-    rval = RegEnumKeyEx(k, i, kname, &sk, NULL, cname, &sc, &t);
+    rval = RegEnumKeyEx(k, i, kname, (LPDWORD)&sk, NULL, cname, (LPDWORD)&sc, &t);
     if ( rval == ERROR_SUCCESS )
     { if ( PL_unify_list(tail, head, tail) &&
 	   PL_unify_atom_chars(head, kname) )
@@ -346,7 +346,7 @@ pl_reg_open_key(term_t parent, term_t name, term_t access, term_t handle)
 
   rval = RegOpenKeyEx(kp, s, 0L, mode, &rk);
   if ( rval == ERROR_SUCCESS )
-    return PL_unify_integer(handle, (int)rk);
+    return PL_unify_integer(handle, (int)(intptr_t)rk);
   if ( rval == ERROR_FILE_NOT_FOUND )
     PL_fail;
 
@@ -526,20 +526,20 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
 
   switch(PL_term_type(value))
   { case PL_ATOM:
-      PL_get_atom_chars(value, &data);
-      len = strlen(data) + 1;
+      PL_get_atom_chars(value, (char**)&data);
+      len = strlen((char*)data) + 1;
       type = REG_SZ;
       break;
     case PL_STRING:
     { size_t l;
-      PL_get_string(value, &data, &l);
+      PL_get_string(value, (char**)&data, &l);
       len = l;
       type = REG_SZ;
       break;
     }
     case PL_INTEGER:
     { DWORD i;
-      PL_get_long(value, &i);
+      PL_get_long(value, (long*)&i);
       data = (BYTE *) &i;
       len = sizeof(i);
       type = REG_DWORD;
@@ -557,16 +557,16 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
       argdata:
 	a = PL_new_term_ref();
 	PL_get_arg(1, value, a);
-	if ( !PL_get_atom_chars(a, &data) )
+	if ( !PL_get_atom_chars(a, (char**)&data) )
 	  goto error;
-	len = strlen(data) + 1;
+	len = strlen((char*)data) + 1;
 	break;
       }					/* TBD: MULTI_SZ (list) */
     }
     default:
     error:
     { term_t ex = PL_new_term_ref();
-
+      len = type = 0; /* keep compiler happy */
       PL_unify_term(ex,
 		    CompoundArg("error", 2),
 		      AtomArg("instantiation_error"),
@@ -658,7 +658,7 @@ pl_reg_create_key(term_t h, term_t name,
 
   rval = RegCreateKeyEx(k, kname, 0L, cname, ops, mode, NULL, &skey, &disp);
   if ( rval == ERROR_SUCCESS )
-    return PL_unify_integer(key, (long)skey);
+    return PL_unify_integer(key, (int)(intptr_t)skey);
   else
     return api_exception(rval, "create", name);
 }

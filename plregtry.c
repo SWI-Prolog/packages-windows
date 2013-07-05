@@ -475,6 +475,11 @@ pl_reg_value(term_t h, term_t name, term_t value)
       case_dword:
 	return PL_unify_integer(value, v);
       }
+/*    case REG_QWORD: */
+      case REG_QWORD_LITTLE_ENDIAN:
+      { DWORD64 v = *((DWORD64 *)data);
+	return PL_unify_integer(value, v);
+      }
       case REG_EXPAND_SZ:
       { return PL_unify_term(value, PL_FUNCTOR, FUNCTOR_expand1,
 			     		PL_CHARS, (char *)data);
@@ -518,7 +523,7 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
 { HKEY k;
   char *vname;
   DWORD rval, type;
-  DWORD intval;
+  int64_t intval;
   size_t len;
   BYTE *data;
 
@@ -542,11 +547,17 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
       break;
     }
     case PL_INTEGER:
-    { if ( !PL_get_long(value, (long*)&intval) )
+    { if ( !PL_get_int64(value, &intval) )
         goto instantiation_error;
       data = (BYTE *) &intval;
-      len = sizeof(intval);
-      type = REG_DWORD;
+      if ( intval > INT_MAX || intval < INT_MIN )
+      { len = sizeof(DWORD64);
+        type = REG_QWORD;
+      }
+      else
+      { len = sizeof(DWORD);
+        type = REG_DWORD;
+      }
       break;
     }
     case PL_TERM:

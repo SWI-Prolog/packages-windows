@@ -518,6 +518,7 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
 { HKEY k;
   char *vname;
   DWORD rval, type;
+  DWORD intval;
   size_t len;
   BYTE *data;
 
@@ -541,11 +542,10 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
       break;
     }
     case PL_INTEGER:
-    { DWORD i;
-      if ( !PL_get_long(value, (long*)&i) )
+    { if ( !PL_get_long(value, (long*)&intval) )
         goto instantiation_error;
-      data = (BYTE *) &i;
-      len = sizeof(i);
+      data = (BYTE *) &intval;
+      len = sizeof(intval);
       type = REG_DWORD;
       break;
     }

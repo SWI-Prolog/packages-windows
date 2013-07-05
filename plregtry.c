@@ -565,17 +565,9 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
     }
     default:
     error:
-    { term_t ex = PL_new_term_ref();
-      len = type = 0; /* keep compiler happy */
-      PL_unify_term(ex,
-		    CompoundArg("error", 2),
-		      AtomArg("instantiation_error"),
-		      PL_VARIABLE);
-
-      PL_raise_exception(ex);
+    { return PL_instantiation_error(value);
     }
   }
-
 
   rval = RegSetValueEx(k, vname, 0L, type, data, (DWORD)len);
   if ( rval == ERROR_SUCCESS )

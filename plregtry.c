@@ -526,20 +526,24 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
 
   switch(PL_term_type(value))
   { case PL_ATOM:
-      PL_get_atom_chars(value, (char**)&data);
+    { if ( !PL_get_atom_chars(value, (char**)&data) )
+        goto instantiation_error;
       len = strlen((char*)data) + 1;
       type = REG_SZ;
       break;
+    }
     case PL_STRING:
     { size_t l;
-      PL_get_string(value, (char**)&data, &l);
+      if ( !PL_get_string(value, (char**)&data, &l) )
+        goto instantiation_error;
       len = l;
       type = REG_SZ;
       break;
     }
     case PL_INTEGER:
     { DWORD i;
-      PL_get_long(value, (long*)&i);
+      if ( !PL_get_long(value, (long*)&i) )
+        goto instantiation_error;
       data = (BYTE *) &i;
       len = sizeof(i);
       type = REG_DWORD;
@@ -556,16 +560,22 @@ pl_reg_set_value(term_t h, term_t name, term_t value)
 
       argdata:
 	a = PL_new_term_ref();
-	PL_get_arg(1, value, a);
-	if ( !PL_get_atom_chars(a, (char**)&data) )
-	  goto error;
+	if ( !(PL_get_arg(1, value, a) &&
+               PL_get_atom_chars(a, (char**)&data)) )
+	  goto instantiation_error;
 	len = strlen((char*)data) + 1;
 	break;
-      }					/* TBD: MULTI_SZ (list) */
+      }	else {				/* TBD: MULTI_SZ (list) */
+        goto domain_error;
+      }
+    }
+    case PL_VARIABLE:
+    instantiation_error:
+    { return PL_instantiation_error(value);
     }
     default:
-    error:
-    { return PL_instantiation_error(value);
+    domain_error:
+    { return PL_domain_error("registry_value", value);
     }
   }
 

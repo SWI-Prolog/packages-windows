@@ -27,6 +27,7 @@
 #include <shlobj.h>
 #include <malloc.h>
 #include <assert.h>
+#include <limits.h>
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This file serves two purposes. It  both   provides  a  reasonable set of

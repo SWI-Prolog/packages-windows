@@ -154,41 +154,47 @@ api_exception(DWORD err, const char *action, term_t key)
   term_t formal = PL_new_term_ref();
   term_t swi	= PL_new_term_ref();
   const char *msg = NULL;
+  int rc;
 
   switch(err)
   { case ERROR_ACCESS_DENIED:
-    { PL_unify_term(formal,
-		    CompoundArg("permission_error", 3),
-		    AtomArg(action),
-		    AtomArg("key"),
-		    TermArg(key));
+    { rc = PL_unify_term(formal,
+			 CompoundArg("permission_error", 3),
+			 AtomArg(action),
+			 AtomArg("key"),
+			 TermArg(key));
       break;
     }
     default:
-      PL_unify_atom_chars(formal, "system_error");
+      rc = PL_unify_atom_chars(formal, "system_error");
       msg = APIError(err);
       break;
   }
 
-  if ( msg )
+  if ( rc && msg )
   { term_t msgterm  = PL_new_term_ref();
 
     if ( msg )
     { PL_put_atom_chars(msgterm, msg);
     }
 
-    PL_unify_term(swi,
-		  CompoundArg("context", 2),
-		    PL_VARIABLE,
-		    PL_TERM, msgterm);
+    rc = PL_unify_term(swi,
+		       CompoundArg("context", 2),
+		       PL_VARIABLE,
+		       PL_TERM, msgterm);
   }
 
-  PL_unify_term(except,
-		CompoundArg("error", 2),
-		  PL_TERM, formal,
-		  PL_TERM, swi);
+  if ( rc )
+  { rc = PL_unify_term(except,
+		       CompoundArg("error", 2),
+		       PL_TERM, formal,
+		       PL_TERM, swi);
+  }
 
-  return PL_raise_exception(except);
+  if ( rc )
+    return PL_raise_exception(except);
+
+  return rc;
 }
 
 
@@ -446,7 +452,7 @@ pl_reg_value(term_t h, term_t name, term_t value)
 	term_t tail = PL_new_term_ref();
 
 	if ( PL_unify_term(value, PL_FUNCTOR, FUNCTOR_binary1,
-			   		PL_TERM, tail) )
+					PL_TERM, tail) )
 	{ DWORD i;
 
 	  for(i=0; i<sizedata; i++)
@@ -483,11 +489,11 @@ pl_reg_value(term_t h, term_t name, term_t value)
       }
       case REG_EXPAND_SZ:
       { return PL_unify_term(value, PL_FUNCTOR, FUNCTOR_expand1,
-			     		PL_CHARS, (char *)data);
+					PL_CHARS, (char *)data);
       }
       case REG_LINK:
       { return PL_unify_term(value, PL_FUNCTOR, FUNCTOR_link1,
-			     		PL_CHARS, (char *)data);
+					PL_CHARS, (char *)data);
       }
       case REG_MULTI_SZ:
       { term_t tail = PL_copy_term_ref(value);

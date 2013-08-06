@@ -140,8 +140,6 @@ As only hooks need to be uninstalled,  you won't need this function very
 often.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-static PL_dispatch_hook_t oldhook;
-
 install_t
 install()
 { PL_register_foreign("say_hello", 1, pl_say_hello, 0);

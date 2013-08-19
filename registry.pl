@@ -58,7 +58,7 @@ dlldemo directory.
 		 *******************************/
 
 shell_register_prolog(Ext) :-
-	current_prolog_flag(argv, [Me|_]),
+	current_prolog_flag(executable, Me),
 	atomic_list_concat(['"', Me, '" "%1"'], OpenCommand),
 	atom_concat(Me, ',0', Icon),
 	shell_register_file_type(Ext, 'prolog.type', 'Prolog Source',
@@ -81,7 +81,7 @@ shell_register_prolog(Ext) :-
 %	is defined and files with this extension will be given Name as
 %	their description in the explorer.  For example:
 %
-% 	==
+%	==
 %	?- shell_register_file_type(pl, 'prolog.type', 'Prolog Source',
 %				    '"c:\\pl\\bin\\plwin.exe" "%1"').
 %	==

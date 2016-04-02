@@ -31,7 +31,8 @@ This directory contains two examples of foreign-language extensions.
 The .dsp files are Microsoft Visual C++ 5.0 project files. Basically, to
 compile them:
 
-	* Ensure the compile has the SWI-Prolog include directory		in the search-path for header-files.
+	* Ensure the compile has the SWI-Prolog include directory
+	in the search-path for header-files.
 	
 	* Ensure the compiler has the SWI-Prolog lib directory in
 	the search-path for libraries.

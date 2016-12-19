@@ -103,7 +103,7 @@ shell_register_file_type(Ext, Type, Name, Open, Icon) :-
     win_flush_filetypes.
 
 ensure_dot(Ext, Ext) :-
-    atom_concat('.', _, Ext), 
+    atom_concat('.', _, Ext),
     !.
 ensure_dot(Ext, DExt) :-
     atom_concat('.', Ext, DExt).

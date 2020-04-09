@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2011-2013, University of Amsterdam
+    Copyright (c)  2011-2020, University of Amsterdam
+                              CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,6 +54,7 @@ dlldemo directory.
                                         % +IfNotRunning
             shell_register_prolog/1     % +Extension
           ]).
+:- autoload(library(lists),[member/2]).
 
 :- use_foreign_library(foreign(plregtry)).      % load plregtry.ddl
 

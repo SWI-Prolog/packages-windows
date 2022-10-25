@@ -718,7 +718,7 @@ will makes these available in the calling context module.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 install_t
-install()
+install_plregtry()
 { init_constants();
 
   PL_register_foreign("reg_subkeys",	 2, pl_reg_subkeys,	0);

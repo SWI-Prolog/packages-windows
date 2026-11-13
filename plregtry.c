@@ -339,13 +339,13 @@ get_access(term_t access, REGSAM *mode)
     { if ( PL_get_atom(head, &a) )
 	*mode |= access_code(a);
       else
-	return FALSE;
+	return false;
     }
     if ( !PL_get_nil(tail) )
-      return FALSE;
+      return false;
   }
 
-  return TRUE;
+  return true;
 }
 
 
@@ -532,7 +532,7 @@ pl_reg_value(term_t h, term_t name, term_t value)
     return api_exception(rval, "write", h);
 
   assert(0);
-  return FALSE;
+  return false;
 }
 
 
@@ -702,7 +702,7 @@ static foreign_t
 win_flush_filetypes()
 { SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT, NULL, NULL);
 
-  return TRUE;
+  return true;
 }
 
 		 /*******************************

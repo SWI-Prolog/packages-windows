@@ -159,7 +159,7 @@ again:
 
 #include <winerror.h>
 
-static int
+static bool
 api_exception(DWORD err, const char *action, term_t key)
 { term_t except = PL_new_term_ref();
   term_t formal = PL_new_term_ref();
@@ -324,7 +324,7 @@ Read a list. Instead of PL_unify_list(),  this uses PL_get_list(), which
 fails if the argument is not instantiated to a list.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-static int
+static bool
 get_access(term_t access, REGSAM *mode)
 { atom_t a;
 
